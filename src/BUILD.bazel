@@ -1,0 +1,37 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_ocaml//build:rules.bzl",
+     "ocaml_library",
+     "ocaml_module",
+     "ocaml_signature",
+     "ppx_module",
+)
+
+DEPS_1 = [
+    "@base//lib/base",
+    "@ppxlib//lib/ppxlib",
+    "//expander:ppx_compare_expander"
+]
+
+############################# Aggregates #############################
+ocaml_library(
+    name       = "ppx_compare",
+    manifest = [
+        ":Ppx_compare"
+    ],
+)
+
+######################## Modules & Signatures ########################
+ocaml_signature(
+    name          = "Ppx_compare.cmi",
+    src           = "ppx_compare.mli",
+    deps          = DEPS_1,
+)
+
+ppx_module(
+    name          = "Ppx_compare",
+    struct        = "ppx_compare.ml",
+    sig           = ":Ppx_compare.cmi",
+    deps          = DEPS_1,
+)
+

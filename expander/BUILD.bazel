@@ -1,0 +1,86 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_ocaml//build:rules.bzl",
+     "ocaml_ns_archive",
+     "ocaml_module",
+     "ocaml_signature",
+     "ppx_executable",
+     "ppx_module",
+)
+
+PPX_ARGS = []
+DEPS_1 = [
+    "@base//lib/base",
+    "@ppxlib//lib/ppxlib"
+]
+
+############################# Aggregates #############################
+ocaml_ns_archive(
+    name       = "ppx_compare_expander",
+    ns_name    = "ppx_compare_expander",
+    manifest = [
+        ":Ppx_compare_expander",
+        ":Ppx_compare_expander_intf"
+    ],
+)
+
+######################## Modules & Signatures ########################
+ocaml_signature(
+    name          = "Ppx_compare_expander.cmi",
+    src           = "ppx_compare_expander.mli",
+    deps          = DEPS_1 + [
+        ":Ppx_compare_expander_intf"
+    ],
+    ppx           = ":ppx_1.exe",
+)
+
+ppx_module(
+    name          = "Ppx_compare_expander",
+    struct        = "ppx_compare_expander.ml",
+    sig           = ":Ppx_compare_expander.cmi",
+    deps          = DEPS_1 + [
+        ":Ppx_compare_expander_intf"
+    ],
+    ppx           = ":ppx_1.exe",
+    ppx_args      = PPX_ARGS + [],
+    ppx_codeps = [
+        "//runtime-lib:ppx_compare_lib",
+    ]
+)
+
+ocaml_module(
+    name          = "Ppx_compare_expander_intf",
+    struct        = "ppx_compare_expander_intf.ml",
+    deps          = DEPS_1,
+    ppx           = ":ppx_1.exe",
+    ppx_args      = PPX_ARGS + []
+)
+
+
+###############
+ppx_executable(
+    name    = "ppx_1.exe",
+    main    = ":Ppx_driver",
+    prologue = [
+        "@ppxlib//lib/metaquot"
+    ],
+)
+
+#############
+ppx_module(
+    name       = "Ppx_driver",
+    struct     = ":ppx_driver.ml",
+    visibility = ["//visibility:public"],
+    deps       = ["@ppxlib//lib/ppxlib"],
+)
+
+########
+genrule(
+    name = "__ppx_driver__",
+    outs = ["ppx_driver.ml"],
+    cmd = "\n".join([
+        "echo \"(* GENERATED FILE - DO NOT EDIT *)\" > \"$@\"",
+        "echo \"let () = Ppxlib.Driver.standalone ()\" >> \"$@\"",
+    ])
+)
+

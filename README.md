@@ -1,4 +1,4 @@
-ppx_compare
+ppx_compare (Bazelized)
 ===========
 
 Generation of fast comparison and equality functions from type
